@@ -12,10 +12,10 @@ def word_positions(tokenized_sentences: list[list[str]]) -> dict[str, dict]:
             word_pos_dict[word][word_number + 1] += 1 # +1 to make positions 1-indexed
             word_counter[word] = word_counter.get(word, 0) + 1
 
-    print(sorted(word_counter.items(), key=lambda x: x[1], reverse=True)[:100]) # print top 100 most common words;
+    print(sorted(word_counter.items(), key=lambda x: x[1], reverse=True)[:200]) # print top 100 most common words;
     print(sorted(word_counter.keys(), key=lambda x: word_counter[x], reverse=True)[:200])
 
-    top_words = [word for word, count in sorted(word_counter.items(), key=lambda x: x[1], reverse=True)[:10]]
+    top_words = [word for word, count in sorted(word_counter.items(), key=lambda x: x[1], reverse=True)[:200]] #10 most common
     word_pos_dict = {word: word_pos_dict[word] for word in top_words}
 
     return dict(word_pos_dict);

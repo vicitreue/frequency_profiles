@@ -8,8 +8,7 @@ import tests
 import kagglehub
 PATH = kagglehub.dataset_download("rupanshukapoor/harry-potter-books")
 
-# TODO: save 100 most comon words to a seperate folder with counts
-
+# TODO: save 100 most common words to a seperate folder with counts
 
 
 def main():  
@@ -17,15 +16,15 @@ def main():
     #### TESTS ####
     tests.standardization_test() #1
     tests.preprocessing_test() #2
-    #print("Word positions: ", word_positions_dict.get("i"), {}) #3
-    #importing_files.load_text_from_local_file("Bachelorarbeit 2026/BuckeyeCorpus") # DEBUG
-
+    tests.word_positions_test() #3
     ################
+
+    # TODO: Ask user for their username to use it in the file path /Users/USERNAME/Semantic of Words/BuckeyeCorpus
+    username = input("Enter your username: ")
 
     # Loading texts from their respective files
     harry_potter_books = importing_files.load_text_from_file(kagglehub.dataset_download("rupanshukapoor/harry-potter-books"))
-    buckeye_transcripts = importing_files.load_text_from_file("/Users/vicitreue/Bachelorarbeit 2026/BuckeyeCorpus")
-
+    buckeye_transcripts = importing_files.load_text_from_file(f"/Users/{username}/Semantics of Words/BuckeyeCorpus")
 
     # BUCKEYE CORPUS
     all_texts_buckeye = importing_files.join_texts(buckeye_transcripts)
@@ -41,13 +40,14 @@ def main():
         word_positions = frequencies.add_zero_frequencies(word, word_positions)
         normalised_word_positions[word] = normalisation.normalised(word_positions, word, 153770)
 
-        # Percentage of occurrences in the first 10 positions for the word
-        percentage = normalisation.calculate_percentage(word_positions, word)
-        print(f"Percentage of occurrences in the first 10 positions for word '{word}': {percentage}")
-
         # Create plots for the word positions and normalised word positions
-        create_plots.plot_word_positions(word_positions, word, False, "buckeye", index + 1)
-        create_plots.plot_word_positions(normalised_word_positions, word, True, "buckeye", index + 1)
+        if index < 10 or word in ["people", "things", "time", "year", "stuff", "person", "school", "kids", "years", "life", "thing", "parents", "mom", "home", "work", "way", "family", "money", "children", "house"]:
+            # Percentage of occurrences for the word
+            percentage = normalisation.calculate_percentage(word_positions, word)
+            print(f"Percentage of occurrences for '{word}': {percentage}")
+            
+            create_plots.plot_word_positions(word_positions, word, False, "buckeye", index + 1)
+            create_plots.plot_word_positions(normalised_word_positions, word, True, "buckeye", index + 1)
 
     # HARRY POTTER BOOKS
     all_texts_hp = importing_files.join_texts(harry_potter_books)
@@ -64,13 +64,14 @@ def main():
         word_positions_dict = frequencies.add_zero_frequencies(word, word_positions_dict)
         normalised_word_positions_dict[word] = normalisation.normalised(word_positions_dict, word, 1105125)
 
-        # Percentage of occurrences in the first 10 positions for the word
+        # Percentage of occurrences for the word
         percentage = normalisation.calculate_percentage(word_positions_dict, word)
-        print(f"Percentage of occurrences in the first 10 positions for word '{word}': {percentage}")
+        print(f"Percentage of occurrences for '{word}': {percentage}")
         
         # Create plots for the word positions and normalised word positions
-        create_plots.plot_word_positions(word_positions_dict, word, False, "hp", index + 1)
-        create_plots.plot_word_positions(normalised_word_positions_dict, word, True, "hp", index + 1)
+        if index < 10 or word in ["ron", "hermione", "dumbledore", "hagrid", "snape", "malfoy", "voldemort", "sirius", "lupin", "potter", "ginny", "george", "fred", "weasley", "hogwarts", "time", "face", "voice", "room", "eyes", "way", "hand", "feet", "fire", "death", "professor", "wand", "people", "moment", "table"]:
+            create_plots.plot_word_positions(word_positions_dict, word, False, "hp", index + 1)
+            create_plots.plot_word_positions(normalised_word_positions_dict, word, True, "hp", index + 1)
 
 if __name__ == "__main__":
     main();

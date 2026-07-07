@@ -9,24 +9,22 @@ def plot_word_positions(word_pos_dict: dict[str, dict], word: str, normalized:bo
         print(f"The word '{word}' was not found in the text.")
         return
 
-    normalized_str = "_normalized" if normalized else ""
+    normalized_str = "normalized" if normalized else ""
 
     sorted_positions = dict(sorted(word_pos_dict[word].items()))
-    keys = list(sorted_positions.keys())[:100] # limit to top 100 positions for better visualization
+    keys = list(sorted_positions.keys())[:60] # limit to top 60 positions for better visualization
     values = [float(sorted_positions[k]) for k in keys]
 
     # Calulations for debugging and analysis
     total_count = sum(values)
-    print(f"---- Total count for word '{word}': {total_count} || first 100 positions")
-    print(f"---- Positions: {keys}")
-    print(f"---- Counts: {values}")
+    print(f"---- Total count for word '{word}': {total_count} || first 60 positions")
     
     # Create a bar plot using matplotlib and seaborn
     fig, ax = plt.subplots(figsize=(10, 6))
     fig.patch.set_visible(False)
 
     ax = sns.barplot(x=keys, y=values, dodge=False, ax=ax, palette='viridis', legend=False)
-    ax.set_title(f"Distribution of positions for the word '{word}'{normalized_str}", fontsize=14)
+    ax.set_title(f" ", fontsize=12)
     for bars_group in ax.containers:
         ax.bar_label(bars_group, padding=3, fontsize=6)
 
@@ -49,7 +47,7 @@ def plot_word_positions(word_pos_dict: dict[str, dict], word: str, normalized:bo
     plt.tight_layout()
 
     # save bar plot to a local folder instead of showing it 
-    filename = f"plots/{corpusName}/{index}_{word}{normalized_str}.png"
+    filename = f"plots/{corpusName}/{index}_{word}_{normalized_str}.png" if normalized else f"plots/{corpusName}/{index}_{word}.png"
     full_path = os.path.abspath(filename)
 
     try:

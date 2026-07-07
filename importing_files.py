@@ -14,7 +14,10 @@ def load_text_from_file(file_path: str) -> dict[str: str]:
                         books[file] = f.read()
 
                 except Exception as e:
-                    print(f"Failed to read {file}: {e}")       
+                    print(f"Failed to read {file}: {e}")    
+    if not books:
+        print("No readable .txt files were found. The program will stop.")
+        raise SystemExit(1)     
     return books;
 
 def join_texts(texts: dict[str: str]) -> str:

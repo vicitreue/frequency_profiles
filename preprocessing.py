@@ -131,6 +131,12 @@ def preprocess(raw_text) -> list[list[str]]:
     text = normalized_text(raw_text)
     text = expand_contractions(text)
 
+    #replace single quotation marks with spaces to avoid issues with tokenization
+    text = remove_footer(text)
+    text = re.sub(r"[‘’]", "", text)
+    text = re.sub(r'[“”]', "", text) 
+    text = re.sub(r"[']", "", text)
+
     # Use NLTK to split the text into setences
     sentences = nltk.sent_tokenize(text, language='english')
     
@@ -145,7 +151,13 @@ def preprocess(raw_text) -> list[list[str]]:
             total_word_counter += len(tokenized_sentence)
             sentences_cleaned.append(tokenized_sentence)
 
+            # Examples of long sentences that exceed 100 words (for thesis discussion purposes)
+            #if len(tokenized_sentence) > 100:
+            #    print(f"XXX: Sentence exceeds 100 words. Length: {len(tokenized_sentence)}. Sentence: {' '.join(tokenized_sentence)}")
+
     print(f"Total word count after cleaning: {total_word_counter}")
+
+
     # List of tokenized sentences
     return sentences_cleaned;
 
