@@ -1,7 +1,7 @@
 import os
 
 def load_text_from_file(file_path: str) -> dict[str: str]:
-    # Load text from a file and return it as a list of strings
+    """Load text from a file and return it as a dictionary of strings."""
     books = {};
 
     for root, dirs, files in os.walk(file_path):
@@ -21,21 +21,19 @@ def load_text_from_file(file_path: str) -> dict[str: str]:
     return books;
 
 def join_texts(texts: dict[str: str]) -> str:
-    # Join the texts into a single string
+    """Join multiple text strings into a single string."""
     return "\n".join(texts.values())
 
 
-
-# load text from a file in folder "Bachelorarbeit 2026/BuckeyeCorpus" and return it as a list of strings
 def load_text_from_local_file(file_path: str) -> dict[str: str]:
+    """Load text from a local file and return it as a dictionary of strings."""
     transcripts = {};
     files = os.listdir(file_path)
 
+    # Iterate through each file in the directory and read its content
     for file in files:
-        print(f"Found file: {file}") # DEBUG
         if file.endswith(".txt"):
             file_path_with_file = f"{file_path}/{file}"
-            #print(f"Attempting to read file: {file_path}") # DEBUG
 
             try:
                 with open(file_path_with_file, "r", encoding="utf-8") as f:

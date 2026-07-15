@@ -5,7 +5,7 @@ nltk.download('punkt_tab')
 nltk.download('universal_tagset')
 
 # Expand common English contractions in the text
-CONTRACTIONS_DICT = {
+CONTRACTIONS_DICT = {    
     "don't": "do not",
     "dont": "do not",      # in case apostrophe was already missing
     "can't": "can not",
@@ -61,6 +61,7 @@ CONTRACTIONS_DICT = {
     # add more as needed...
 }
 
+# Common character names 
 NAMES = {
     "harry",
     "ron",
@@ -81,6 +82,7 @@ NAMES = {
     # add more as needed...
 }
 
+# Common filler words in conversational speech
 FILLER_WORDS = {
     'um', 'uh', 'umm', 'uhh', 'hmm', 'mmhmm', 'mm-hmm', 'mhm', 'ahh',
     'erm', 'ah', 'eh', 'lordy', 'yeah', 'yep', 'okay', 'ok', 'mm', 'err',
@@ -88,22 +90,30 @@ FILLER_WORDS = {
     'um-hum', 'uh-hum', 'mm-hum', 'ehh', 'uhm', 'ummm', 'uhhh', 'ohh'
 }
 
+####
+
 def normalized_text(raw_text: str) -> str:
-    # Replace curly apostrophes and quotes with straight versions
+    """Normalize the text by replacing special characters."""
     text = re.sub(r'[“”]', "'", raw_text) # left and right double quotation marks
     text = re.sub(r'[‘’]', "'", raw_text) # left and right single quotation marks 
     text = re.sub(r'[—–…]', lambda m: {'—': '-', '–': '-', '…': '...'}[m.group()], text) # em dash, en dash, ellipsis
     return text;
 
 def expand_contractions(text: str) -> str:
-    text = re.sub(r"\"", "", text) # Remove double quotes to avoid issues with tokenization
-    
-    words = text.split()
-    expanded = []
+    """Removes double quotes before splitting sentences into word tokens. Expands common English contractions in the text."""
 
+    # Remove double quotes to avoid issues with tokenization
+    text = re.sub(r"\"", "", text)
+    
+    # Split the text into words for contraction expansion
+    words = text.split()
+
+    # Expand contractions and handle special cases
+    expanded = []
     for i, word in enumerate(words):
         w_low = word.lower()
         if (i + 1 < len(words)) and (w_low in CONTRACTIONS_DICT):
+
             # Special handling for he's / she's / it's => 'is' or 'has'
             if w_low in {"he's", "she's", "it's"}:
                 next_word = nltk.word_tokenize(words[i + 1])
@@ -116,6 +126,7 @@ def expand_contractions(text: str) -> str:
                     expanded.append(CONTRACTIONS_DICT[w_low])
             else:
                 expanded.append(CONTRACTIONS_DICT[w_low])
+
         elif (w_low.endswith("’s") or w_low.endswith("'s")) and w_low[:-2] in NAMES:
             expanded.append(w_low[:-2])  # Remove 's
         else:
@@ -124,36 +135,42 @@ def expand_contractions(text: str) -> str:
     return " ".join(expanded);
 
 def remove_footer(text:str) -> str:
-    # Remove "Page | (...) - J.K. Rowling" from the text
+    """Remove footer text "Page | (...) - J.K. Rowling"."""
     return re.sub(r"(?im)^page\s*\|.*$", "", text)
 
 def preprocess(raw_text) -> list[list[str]]:
+    """Preprocess the raw text by normalizing, expanding contractions, removing footers, and tokenizing into sentences and words."""
+
+    # Normalize the text and expand contractions
     text = normalized_text(raw_text)
     text = expand_contractions(text)
 
-    #replace single quotation marks with spaces to avoid issues with tokenization
+    # Remove footer and unwanted characters
     text = remove_footer(text)
     text = re.sub(r"[‘’]", "", text)
     text = re.sub(r'[“”]', "", text) 
     text = re.sub(r"[']", "", text)
 
-    # Use NLTK to split the text into setences
+    # Use NLTK to split text into setences
     sentences = nltk.sent_tokenize(text, language='english')
     
     sentences_cleaned = []
     total_word_counter = 0
-    
-    for sentence in sentences:
-        tokenized_sentence = re.sub(r"[^A-Za-z0-9\s]+", "", sentence)  # Remove punctuation
-        tokenized_sentence = re.sub(r"\s+", " ", tokenized_sentence).lower().split()  # Remove extra whitespace
 
-        if tokenized_sentence:  # Only add non-empty sentences
+    # Clean sentences
+    for sentence in sentences:
+        # Remove punctuation and extra whitespace
+        tokenized_sentence = re.sub(r"[^A-Za-z0-9\s]+", "", sentence)
+        tokenized_sentence = re.sub(r"\s+", " ", tokenized_sentence).lower().split() 
+
+        # Only add non-empty sentences
+        if tokenized_sentence: 
             total_word_counter += len(tokenized_sentence)
             sentences_cleaned.append(tokenized_sentence)
 
             # Examples of long sentences that exceed 100 words (for thesis discussion purposes)
-            #if len(tokenized_sentence) > 100:
-            #    print(f"XXX: Sentence exceeds 100 words. Length: {len(tokenized_sentence)}. Sentence: {' '.join(tokenized_sentence)}")
+            if len(tokenized_sentence) > 100:
+                print(f"Sentence Length: {len(tokenized_sentence)} || {' '.join(tokenized_sentence)}")
 
     print(f"Total word count after cleaning: {total_word_counter}")
 
@@ -163,25 +180,32 @@ def preprocess(raw_text) -> list[list[str]]:
 
 
 def clean_buckeye_transcript(raw_text: str) -> list[list[str]]:
+    """Clean the Buckeye Corpus transcript by normalising, expanding contractions, removing filler words, and splitting into sentences and words."""
+
+    # Normalize the text and expand contractions
     text = normalized_text(raw_text)
     text = expand_contractions(text)
 
-    # 1. Remove filler words before splitting into sentences
-    text = ' '.join([w for w in text.split() if w.lower() not in FILLER_WORDS]) # remove filler words
+    # Remove filler words
+    text = ' '.join([w for w in text.split() if w.lower() not in FILLER_WORDS]) 
 
-    # 2. Split on <SIL> tags FIRST (these become our sentence boundaries)
+    # Split on <SIL> tags
     utterances:list[str] = re.split(r'<SIL\s*>', text, flags=re.IGNORECASE)
 
-    # 3. Clean each resulting utterance
     cleaned_utterances = []
     total_word_counter = 0
 
+    # Clean each utterance
     for utt in utterances:
-        utt = re.sub(r'<[^>]+>', ' ', utt) # Remove all remaining tags (<VOCNOISE>, <IVER>, <UNKNOWN>, <EXCLUDE-name>, etc.)
-        utt = re.sub(r"[^A-Za-z0-9\s]+", "", utt)  # Remove punctuation
-        utt = re.sub(r"\s+", " ", utt).lower().split()  # Remove extra whitespace
+        # Remove all remaining tags (<VOCNOISE>, <IVER>, <UNKNOWN>, <EXCLUDE-name>, etc.)
+        utt = re.sub(r'<[^>]+>', ' ', utt)
 
-        if utt: # Only add non-empty utterences
+        # Remove punctuation and extra whitespace
+        utt = re.sub(r"[^A-Za-z0-9\s]+", "", utt) 
+        utt = re.sub(r"\s+", " ", utt).lower().split() 
+
+        # Only add non-empty utterances
+        if utt: 
             total_word_counter += len(utt)
             cleaned_utterances.append(utt)
 
